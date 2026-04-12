@@ -22,8 +22,6 @@ public class AudioManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Safety fallback: if references were not assigned correctly,
-        // grab the AudioSources on this same object.
         AudioSource[] sources = GetComponents<AudioSource>();
 
         if (musicSource == null && sources.Length > 0)
