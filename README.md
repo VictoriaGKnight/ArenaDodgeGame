@@ -7,6 +7,18 @@ The game focuses on fast-paced movement, reaction time, and real-time multiplaye
 
 This project demonstrates multiplayer networking, event-driven programming, design patterns, and database integration.
 
+## How to play
+
+### Objective
+Be the last player alive by avoiding enemy projectiles and hitting your opponent.
+
+### Controls
+Move Left: Left arrow
+Move Right: Right arrow
+Jump: Space
+Shoot: Up arrow
+Pause Menu: Escape
+
 ## Setup Instructions
 
 ### 1. Clone the Repository
@@ -48,6 +60,24 @@ git clone https://github.com/VictoriaGKnight/ArenaDodgeGame.git
 - Projectiles damage opponents
 - Game ends when one player is eliminated
 
+## Project Structure
+### Assets
+Scripts
+- GameManager.cs
+- PlayerNetworkController.cs
+- NetworkMatchManager.cs
+- AudioManager.cs
+- DatabaseManager.cs
+- PauseMenuManager.cs
+Scenes
+- MainMenu
+- GameScene
+- GameScene2
+- GameOver
+Prefabs
+UI
+Audio
+
 ## Technical Requirements Implemented
 
 ### Singleton Pattern
@@ -60,6 +90,15 @@ git clone https://github.com/VictoriaGKnight/ArenaDodgeGame.git
   - onHealthChanged
   - onScoreChanged
 - UIManager.cs and AudioManager.cs subscribe to these events
+
+### Additional Design Pattern
+Object pool pattern used for projectiles to reuse objects instead of instantiating and destroying them repeatedly.
+
+### Database Integration (SQLite)
+Implemented in DatabaseManager.cs Handles creating a HighScores table, saving scores, and retrieving top scores.
+
+### Save / Load System
+Implemented using PlayerPrefs in AudioManager.cs. Saves and loads master, music, and sound effect volume settings between play sessions. 
 
 ### Audio System
 - AudioManager.cs:
@@ -81,16 +120,15 @@ Important files:
 - GameOverManager.cs
 
 ## Known Issues
-- UI uses placeholder visuals
-- Multiplayer tested locally only (sometimes has bugs)
-- Limited content (single arena)
+- Multiplayer testing requires running both Unity Editor and a built executable.
+- Music controls sometimes cause music and sound effects to have bugs.
 
-## Future Improvements
-- Add more maps
-- Improve UI design
-- Ensure multiplayer always works
-- Expand multiplayer features
-- Improve leaderboard system
+## Technologies Used
+- Unity Engine
+- C#
+- Unity Netcode for GameObjects
+- SQLite (Mono.Data.Sqlite)
+- PlayerPrefs
 
 ## Author
 Victoria Knight
