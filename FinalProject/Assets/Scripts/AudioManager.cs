@@ -19,6 +19,7 @@ public class AudioManager : MonoBehaviour
 
     void Awake()
     {
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -76,7 +77,7 @@ public class AudioManager : MonoBehaviour
 
     public void PlaySoundEffect(AudioClip clip)
     {
-        if (clip != null && sfxSource != null)
+        if (clip != null && sfxSource != null && AudioListener.volume > 0f && sfxSource.volume > 0f)
         {
             sfxSource.PlayOneShot(clip);
         }
@@ -102,7 +103,7 @@ public class AudioManager : MonoBehaviour
 
     public void SetMasterVolume(float volume)
     {
-        masterVolume = volume;
+        masterVolume = Mathf.Clamp01(volume);
         AudioListener.volume = masterVolume;
         SaveAudioSettings();
     }
@@ -111,7 +112,7 @@ public class AudioManager : MonoBehaviour
     {
         if (musicSource != null)
         {
-            musicSource.volume = volume;
+            musicSource.volume = Mathf.Clamp01(volume);
             SaveAudioSettings();
         }
     }
@@ -120,7 +121,7 @@ public class AudioManager : MonoBehaviour
     {
         if (sfxSource != null)
         {
-            sfxSource.volume = volume;
+            sfxSource.volume = Mathf.Clamp01(volume);
             SaveAudioSettings();
         }
     }
@@ -138,6 +139,25 @@ public class AudioManager : MonoBehaviour
     public float GetSfxVolume()
     {
         return sfxSource != null ? sfxSource.volume : 0.8f;
+    }
+
+    public void ResetAudioSettings()
+    {
+        masterVolume = 1f;
+
+        AudioListener.volume = 1f;
+
+        if (musicSource != null)
+        {
+            musicSource.volume = 0.3f;
+        }
+
+        if (sfxSource != null)
+        {
+            sfxSource.volume = 0.8f;
+        }
+
+        SaveAudioSettings();
     }
 
     private void SaveAudioSettings()
@@ -163,16 +183,16 @@ public class AudioManager : MonoBehaviour
         float savedMusicVolume = PlayerPrefs.GetFloat(MusicVolumeKey, 0.3f);
         float savedSfxVolume = PlayerPrefs.GetFloat(SfxVolumeKey, 0.8f);
 
-        AudioListener.volume = masterVolume;
+        AudioListener.volume = Mathf.Clamp01(masterVolume);
 
         if (musicSource != null)
         {
-            musicSource.volume = savedMusicVolume;
+            musicSource.volume = Mathf.Clamp01(savedMusicVolume);
         }
 
         if (sfxSource != null)
         {
-            sfxSource.volume = savedSfxVolume;
+            sfxSource.volume = Mathf.Clamp01(savedSfxVolume);
         }
     }
 }
