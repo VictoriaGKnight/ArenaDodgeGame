@@ -17,6 +17,9 @@ public class GameManager : MonoBehaviour
     public int LocalScore => localScore;
     public string WinnerName => winnerName;
 
+    private int currentLevel = 1;
+    public int CurrentLevel => currentLevel;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -55,5 +58,15 @@ public class GameManager : MonoBehaviour
 
         onHealthChanged?.Invoke(localHealth);
         onScoreChanged?.Invoke(localScore);
+    }
+
+    public void SetCurrentLevel(int level)
+    {
+        currentLevel = level;
+    }
+
+    public void AdvanceToNextLevel()
+    {
+        currentLevel++;
     }
 }

@@ -97,3 +97,43 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Unity folders to ignore
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+Logs/
+UserSettings/
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Visual Studio / VS Code
+.vscode/
+*.csproj
+*.unityproj
+*.sln
+*.user
+*.userprefs
+*.pidb
+*.booproj
+
+# Unity cache
+*.pidb.meta
+*.pdb.meta
+
+# Crash reports
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.exe
+*.app
+*.dmg
+
+# SQLite database (optional keep or remove depending on assignment)
+*.db

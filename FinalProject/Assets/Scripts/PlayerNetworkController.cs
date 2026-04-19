@@ -24,31 +24,53 @@ public class PlayerNetworkController : NetworkBehaviour
     );
 
     public override void OnNetworkSpawn()
+{
+    Debug.Log("Player spawned | OwnerClientId: " + OwnerClientId +
+              " | LocalClientId: " + NetworkManager.Singleton.LocalClientId +
+              " | IsOwner: " + IsOwner);
+
+    rb = GetComponent<Rigidbody2D>();
+
+    if (spriteRenderer != null)
     {
-        rb = GetComponent<Rigidbody2D>();
-
-        if (IsServer)
+        if (OwnerClientId == 0)
         {
-            currentHealth.Value = maxHealth;
-
-            if (NetworkMatchManager.Instance != null)
-            {
-                transform.position = NetworkMatchManager.Instance.GetSpawnPosition(OwnerClientId);
-            }
+            spriteRenderer.color = Color.cyan;
         }
-
-        currentHealth.OnValueChanged += OnHealthChanged;
-
-        if (IsOwner && GameManager.Instance != null)
+        else
         {
-            GameManager.Instance.ResetMatchData();
-            GameManager.Instance.SetLocalHealth(currentHealth.Value);
+            spriteRenderer.color = Color.magenta;
         }
     }
 
-    void OnDestroy()
+    if (IsServer)
+    {
+        currentHealth.Value = maxHealth;
+
+        if (OwnerClientId == 0)
+        {
+            transform.position = new Vector3(-6f, 2f, 0f);
+        }
+        else
+        {
+            transform.position = new Vector3(6f, 2f, 0f);
+        }
+
+        Debug.Log("Server positioned player " + OwnerClientId + " at " + transform.position);
+    }
+
+    currentHealth.OnValueChanged += OnHealthChanged;
+
+    if (IsOwner && GameManager.Instance != null)
+    {
+        GameManager.Instance.SetLocalHealth(currentHealth.Value);
+    }
+}
+
+    public override void OnDestroy()
     {
         currentHealth.OnValueChanged -= OnHealthChanged;
+        base.OnDestroy();
     }
 
     private void OnHealthChanged(int oldValue, int newValue)
@@ -60,57 +82,68 @@ public class PlayerNetworkController : NetworkBehaviour
     }
 
     void Update()
+{
+    if (!IsOwner) return;
+
+    if (PauseMenuManager.IsPausedLocal)
     {
-        if (!IsOwner) return;
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        return;
+    }
 
-        shootTimer -= Time.deltaTime;
+    if (Input.GetKeyDown(KeyCode.P))
+    {
+        Debug.Log("Local owner controlling player with OwnerClientId: " + OwnerClientId);
+    }
 
-        float moveInput = Input.GetAxisRaw("Horizontal");
-        rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
+    shootTimer -= Time.deltaTime;
 
-        if (moveInput > 0.01f)
+    float moveInput = Input.GetAxisRaw("Horizontal");
+    rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
+
+    if (moveInput > 0.01f)
+    {
+        facingRight = true;
+        spriteRenderer.flipX = false;
+    }
+    else if (moveInput < -0.01f)
+    {
+        facingRight = false;
+        spriteRenderer.flipX = true;
+    }
+
+    if (Input.GetButtonDown("Jump") && isGrounded)
+    {
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+    }
+
+    if ((Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) && shootTimer <= 0f)
+    {
+        Debug.Log("Shoot key detected");
+
+        shootTimer = shootCooldown;
+
+        float direction = facingRight ? 1f : -1f;
+        ShootServerRpc(direction);
+
+        if (AudioManager.Instance != null)
         {
-            facingRight = true;
-            spriteRenderer.flipX = false;
-        }
-        else if (moveInput < -0.01f)
-        {
-            facingRight = false;
-            spriteRenderer.flipX = true;
-        }
-
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-
-        }
-
-        if ((Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) && shootTimer <= 0f)
-        {
-            shootTimer = shootCooldown;
-
-            float direction = facingRight ? 1f : -1f;
-            ShootServerRpc(direction);
-
-            if (AudioManager.Instance != null)
-            {
-                AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.shootSound);
-            }
+            AudioManager.Instance.PlayShootSound();
         }
     }
+}
 
     [ServerRpc]
     private void ShootServerRpc(float direction)
-    {
-        if (projectilePrefab == null || shootPoint == null) return;
+{
+    if (shootPoint == null) return;
 
-        GameObject projectileObj = Instantiate(projectilePrefab, shootPoint.position, Quaternion.identity);
-        NetworkObject projectileNetworkObject = projectileObj.GetComponent<NetworkObject>();
-        projectileNetworkObject.Spawn();
+    GameObject projectileObj = ProjectilePool.Instance.GetProjectile();
+    projectileObj.transform.position = shootPoint.position;
 
-        Projectile projectile = projectileObj.GetComponent<Projectile>();
-        projectile.Initialize(direction, OwnerClientId);
-    }
+    Projectile projectile = projectileObj.GetComponent<Projectile>();
+    projectile.Initialize(direction, OwnerClientId);
+}
 
     public void TakeDamage(int amount, ulong attackerId)
     {
